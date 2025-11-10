@@ -17,30 +17,184 @@
                 "tags": [
                     "Books"
                 ],
-                "summary": "Get list of books",
-                "description": "Retrieve Gutenberg books with filters",
+                "summary": "Get list of Gutenberg books",
+                "description": "Retrieve books with multiple filter options. Results are sorted by downloads (popularity) and paginated (25 per page).",
                 "operationId": "87f4bccc3c4f329beecbeab02868ee90",
                 "parameters": [
                     {
-                        "name": "language",
+                        "name": "id",
                         "in": "query",
-                        "description": "Filter by language (comma separated)",
+                        "description": "Filter by Project Gutenberg ID (comma-separated)",
+                        "required": false,
                         "schema": {
                             "type": "string"
-                        }
+                        },
+                        "example": "1,2,3"
+                    },
+                    {
+                        "name": "language",
+                        "in": "query",
+                        "description": "Filter by language code (comma-separated)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "en,fr"
+                    },
+                    {
+                        "name": "mime_type",
+                        "in": "query",
+                        "description": "Filter by file MIME type (comma-separated)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "application/pdf,text/plain"
                     },
                     {
                         "name": "topic",
                         "in": "query",
-                        "description": "Filter by subject or bookshelf",
+                        "description": "Filter by subject or bookshelf (case-insensitive, comma-separated)",
+                        "required": false,
                         "schema": {
                             "type": "string"
-                        }
+                        },
+                        "example": "child,education"
+                    },
+                    {
+                        "name": "author",
+                        "in": "query",
+                        "description": "Filter by author name (partial match, comma-separated)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "doyle,shakespeare"
+                    },
+                    {
+                        "name": "title",
+                        "in": "query",
+                        "description": "Filter by book title (partial match, comma-separated)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "sherlock,adventures"
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (defaults to 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 2
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "Successful fetch",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "total": {
+                                            "type": "integer",
+                                            "example": 1234
+                                        },
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1342
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "example": "The Adventures of Sherlock Holmes"
+                                                    },
+                                                    "authors": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "Arthur Conan Doyle"
+                                                        ]
+                                                    },
+                                                    "genre": {
+                                                        "type": "string",
+                                                        "example": "Fiction"
+                                                    },
+                                                    "language": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "en"
+                                                        ]
+                                                    },
+                                                    "subjects": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "Detective and mystery stories"
+                                                        ]
+                                                    },
+                                                    "bookshelves": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        },
+                                                        "example": [
+                                                            "Mystery"
+                                                        ]
+                                                    },
+                                                    "downloads": {
+                                                        "type": "integer",
+                                                        "example": 54512
+                                                    },
+                                                    "formats": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "mime_type": {
+                                                                    "type": "string",
+                                                                    "example": "application/pdf"
+                                                                },
+                                                                "url": {
+                                                                    "type": "string",
+                                                                    "example": "https://www.gutenberg.org/files/1661/1661-pdf.pdf"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "next_page_url": {
+                                            "type": "string",
+                                            "example": "http://localhost:8000/api/books?page=2"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
                     }
                 }
             }

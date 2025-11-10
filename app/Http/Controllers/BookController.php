@@ -10,23 +10,110 @@ use App\Http\Resources\BookResource;
  * @OA\Get(
  *     path="/api/books",
  *     tags={"Books"},
- *     summary="Get list of books",
- *     description="Retrieve Gutenberg books with filters",
+ *     summary="Get list of Gutenberg books",
+ *     description="Retrieve books with multiple filter options. Results are sorted by downloads (popularity) and paginated (25 per page).",
+ *
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="query",
+ *         description="Filter by Project Gutenberg ID (comma-separated)",
+ *         required=false,
+ *         example="1,2,3",
+ *         @OA\Schema(type="string")
+ *     ),
+ *
  *     @OA\Parameter(
  *         name="language",
  *         in="query",
- *         description="Filter by language (comma separated)",
+ *         description="Filter by language code (comma-separated)",
+ *         required=false,
+ *         example="en,fr",
  *         @OA\Schema(type="string")
  *     ),
+ *
+ *     @OA\Parameter(
+ *         name="mime_type",
+ *         in="query",
+ *         description="Filter by file MIME type (comma-separated)",
+ *         required=false,
+ *         example="application/pdf,text/plain",
+ *         @OA\Schema(type="string")
+ *     ),
+ *
  *     @OA\Parameter(
  *         name="topic",
  *         in="query",
- *         description="Filter by subject or bookshelf",
+ *         description="Filter by subject or bookshelf (case-insensitive, comma-separated)",
+ *         required=false,
+ *         example="child,education",
  *         @OA\Schema(type="string")
  *     ),
+ *
+ *     @OA\Parameter(
+ *         name="author",
+ *         in="query",
+ *         description="Filter by author name (partial match, comma-separated)",
+ *         required=false,
+ *         example="doyle,shakespeare",
+ *         @OA\Schema(type="string")
+ *     ),
+ *
+ *     @OA\Parameter(
+ *         name="title",
+ *         in="query",
+ *         description="Filter by book title (partial match, comma-separated)",
+ *         required=false,
+ *         example="sherlock,adventures",
+ *         @OA\Schema(type="string")
+ *     ),
+ *
+ *     @OA\Parameter(
+ *         name="page",
+ *         in="query",
+ *         description="Page number for pagination (defaults to 1)",
+ *         required=false,
+ *         example=2,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *
  *     @OA\Response(
  *         response=200,
- *         description="Success"
+ *         description="Successful fetch",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="total", type="integer", example=1234),
+ *             @OA\Property(property="current_page", type="integer", example=1),
+ *             @OA\Property(
+ *                 property="data",
+ *                 type="array",
+ *                 @OA\Items(
+ *                     type="object",
+ *                     @OA\Property(property="id", type="integer", example=1342),
+ *                     @OA\Property(property="title", type="string", example="The Adventures of Sherlock Holmes"),
+ *                     @OA\Property(property="authors", type="array", @OA\Items(type="string"), example={"Arthur Conan Doyle"}),
+ *                     @OA\Property(property="genre", type="string", example="Fiction"),
+ *                     @OA\Property(property="language", type="array", @OA\Items(type="string"), example={"en"}),
+ *                     @OA\Property(property="subjects", type="array", @OA\Items(type="string"), example={"Detective and mystery stories"}),
+ *                     @OA\Property(property="bookshelves", type="array", @OA\Items(type="string"), example={"Mystery"}),
+ *                     @OA\Property(property="downloads", type="integer", example=54512),
+ *                     @OA\Property(
+ *                         property="formats",
+ *                         type="array",
+ *                         @OA\Items(
+ *                             type="object",
+ *                             @OA\Property(property="mime_type", type="string", example="application/pdf"),
+ *                             @OA\Property(property="url", type="string", example="https://www.gutenberg.org/files/1661/1661-pdf.pdf")
+ *                         )
+ *                     )
+ *                 )
+ *             ),
+ *             @OA\Property(property="next_page_url", type="string", example="http://localhost:8000/api/books?page=2")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=500,
+ *         description="Server error"
  *     )
  * )
  */
@@ -52,7 +139,7 @@ class BookController extends Controller
 
             $query->whereHas('languages', function ($q) use ($langs) {
                 foreach ($langs as $lang) {
-                    $q->orWhere('language', 'ilike', "%{$lang}%");
+                    $q->orWhere('code', 'ilike', "%{$lang}%");
                 }
             });
         }
