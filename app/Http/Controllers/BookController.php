@@ -6,6 +6,31 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Http\Resources\BookResource;
 
+/**
+ * @OA\Get(
+ *     path="/api/books",
+ *     tags={"Books"},
+ *     summary="Get list of books",
+ *     description="Retrieve Gutenberg books with filters",
+ *     @OA\Parameter(
+ *         name="language",
+ *         in="query",
+ *         description="Filter by language (comma separated)",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Parameter(
+ *         name="topic",
+ *         in="query",
+ *         description="Filter by subject or bookshelf",
+ *         @OA\Schema(type="string")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Success"
+ *     )
+ * )
+ */
+
 class BookController extends Controller
 {
     public function index(Request $request)
